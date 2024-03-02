@@ -1,6 +1,11 @@
 package gosets
 
-import "slices"
+import (
+	"cmp"
+	"fmt"
+	"iter"
+	"slices"
+)
 
 type OrderedSet[S ~[]E, E comparable] struct {
 	items  S
@@ -8,9 +13,17 @@ type OrderedSet[S ~[]E, E comparable] struct {
 	cmp    func(E, E) int
 }
 
-// func BinarySearchFunc[S ~[]E, E, T any](x S, target T, cmp func(E, T) int) (int, bool) {
+func (o *OrderedSet[S, E]) String() string {
+	return fmt.Sprintf("%+v", o.items)
+}
 
-func NewOrderedSet[S ~[]E, E, T comparable](cmp func(E, E) int) *OrderedSet[S, E] {
+func DefaultCmp[E cmp.Ordered]() func(E, E) int {
+	return func(e E, t E) int {
+		return cmp.Compare(e, t)
+	}
+}
+
+func NewOrderedSet[S ~[]E, E comparable](cmp func(E, E) int) *OrderedSet[S, E] {
 	if cmp == nil {
 		panic("comparison func cannot be nil")
 	}
@@ -20,26 +33,49 @@ func NewOrderedSet[S ~[]E, E, T comparable](cmp func(E, E) int) *OrderedSet[S, E
 	}
 }
 
-/*
-
-20 func (s *OrderedSet[T]) Add(element T) {
-21     if _, exists := s.elements[element]; !exists {
-22         s.elements[element] = struct{}{}
-23         index := sort.Search(len(s.sorted), func(i int) bool { return s.sorted[i] >= element })
-24         s.sorted = append(s.sorted, element)
-25         if index < len(s.sorted)-1 {
-26             copy(s.sorted[index+1:], s.sorted[index:])
-27             s.sorted[index] = element
-28         }
-29     }
-30 }
-*/
-
-func (o *OrderedSet[S, E]) Add(item E) {
-	if _, ok := o.exists[item]; !ok {
-		return
+func (o *OrderedSet[S, E]) All() iter.Seq[E] {
+	return func(yield func(E) bool) {
+		for _, item := range o.items {
+			if !yield(item) {
+				return
+			}
+		}
 	}
-	o.exists[item] = struct{}{}
-	slices.BinarySearchFunc(o.items, item, o.cmp)
-	o.items = append(o.items, item)
+}
+
+func (o *OrderedSet[S, E]) Add(items ...E) {
+	for _, item := range items {
+		if _, ok := o.exists[item]; ok {
+			return
+		}
+		o.exists[item] = struct{}{}
+		index, _ := slices.BinarySearchFunc(o.items, item, o.cmp)
+		o.items = append(o.items, item)
+		if index < len(o.items)-1 {
+			copy(o.items[index+1:], o.items[index:])
+			o.items[index] = item
+		}
+	}
+}
+
+func (o *OrderedSet[S, E]) Contains(item E) bool {
+	_, ok := o.exists[item]
+	return ok
+}
+
+func (o *OrderedSet[S, E]) Remove(items ...E) {
+	for _, item := range items {
+		if _, ok := o.exists[item]; !ok {
+			return
+		}
+		delete(o.exists, item)
+		index, ok := slices.BinarySearchFunc(o.items, item, o.cmp)
+		if !ok {
+			return
+		}
+		if index < len(o.items) && o.items[index] == item {
+			o.items = append(o.items[:index], o.items[index+1:]...)
+		}
+	}
+
 }
