@@ -17,13 +17,18 @@ func (o *OrderedSet[S, E]) String() string {
 	return fmt.Sprintf("%+v", o.items)
 }
 
-func DefaultCmp[E cmp.Ordered]() func(E, E) int {
-	return func(e E, t E) int {
-		return cmp.Compare(e, t)
-	}
+func (o *OrderedSet[S, E]) Size() int {
+	return len(o.items)
 }
 
-func NewOrderedSet[S ~[]E, E comparable](cmp func(E, E) int) *OrderedSet[S, E] {
+func NewOrderedSet[S ~[]E, E cmp.Ordered]() *OrderedSet[S, E] {
+	cmpFunc := func(e E, t E) int {
+		return cmp.Compare(e, t)
+	}
+	return NewOrderedSetWithComparator[S, E](cmpFunc)
+}
+
+func NewOrderedSetWithComparator[S ~[]E, E comparable](cmp func(E, E) int) *OrderedSet[S, E] {
 	if cmp == nil {
 		panic("comparison func cannot be nil")
 	}
