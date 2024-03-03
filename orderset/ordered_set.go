@@ -3,6 +3,7 @@ package gosets
 import (
 	"cmp"
 	"fmt"
+
 	"iter"
 	"slices"
 )
@@ -17,18 +18,18 @@ func (o *OrderedSet[S, E]) String() string {
 	return fmt.Sprintf("%+v", o.items)
 }
 
-func (o *OrderedSet[S, E]) Size() int {
+func (o *OrderedSet[S, E]) Len() int {
 	return len(o.items)
 }
 
-func NewOrderedSet[S ~[]E, E cmp.Ordered]() *OrderedSet[S, E] {
+func New[S ~[]E, E cmp.Ordered]() *OrderedSet[S, E] {
 	cmpFunc := func(e E, t E) int {
 		return cmp.Compare(e, t)
 	}
-	return NewOrderedSetWithComparator[S, E](cmpFunc)
+	return NewWithComparator[S, E](cmpFunc)
 }
 
-func NewOrderedSetWithComparator[S ~[]E, E comparable](cmp func(E, E) int) *OrderedSet[S, E] {
+func NewWithComparator[S ~[]E, E comparable](cmp func(E, E) int) *OrderedSet[S, E] {
 	if cmp == nil {
 		panic("comparison func cannot be nil")
 	}
@@ -74,13 +75,9 @@ func (o *OrderedSet[S, E]) Remove(items ...E) {
 			return
 		}
 		delete(o.exists, item)
-		index, ok := slices.BinarySearchFunc(o.items, item, o.cmp)
-		if !ok {
-			return
-		}
+		index, _ := slices.BinarySearchFunc(o.items, item, o.cmp)
 		if index < len(o.items) && o.items[index] == item {
 			o.items = append(o.items[:index], o.items[index+1:]...)
 		}
 	}
-
 }
