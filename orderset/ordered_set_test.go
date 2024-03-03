@@ -10,9 +10,7 @@ import (
 
 func TestAddRemove(t *testing.T) {
 	claim := require.New(t)
-	set := New[[]int, int]()
-	input := []int{5, 100, 1, 90, 35, 45}
-	set.Add(input...)
+	set, input := testSet()
 	claim.True(len(input) == set.Len())
 	for _, item := range input {
 		claim.Truef(set.Contains(item), "set does not contain %d when it should have this element", item)
@@ -23,10 +21,18 @@ func TestAddRemove(t *testing.T) {
 	claim.True(set.Len() == 0)
 }
 
+func TestClear(t *testing.T) {
+	claim := require.New(t)
+	set, input := testSet()
+	claim.True(len(input) == set.Len())
+	set.Clear()
+	claim.Len(set.exists, 0)
+	claim.Len(set.items, 0)
+}
+
 func TestIteration(t *testing.T) {
 	claim := require.New(t)
-	set := New[[]int, int]()
-	input := []int{5, 100, 1, 90, 35, 45}
+	set, input := testSet()
 	slices.Sort(input)
 	set.Add(input...)
 	var actual []int
@@ -54,11 +60,13 @@ func TestCustomComparator(t *testing.T) {
 		{Name: "Charlie", Age: 20},
 	}
 	set.Add(persons...)
-	actual := make([]Person, 0)
-	for v := range set.All() {
-		actual = append(actual, v)
-	}
 	slices.SortFunc(persons, cmpFunc)
+	claim.Equal(persons, set.items)
+}
 
-	claim.Equal(persons, actual)
+func testSet() (*OrderedSet[[]int, int], []int) {
+	set := New[[]int, int]()
+	input := []int{5, 100, 1, 90, 35, 45}
+	set.Add(input...)
+	return set, input
 }

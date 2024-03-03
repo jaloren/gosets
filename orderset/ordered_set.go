@@ -22,6 +22,11 @@ func (o *OrderedSet[S, E]) Len() int {
 	return len(o.items)
 }
 
+func (o *OrderedSet[S, E]) Clear() {
+	o.items = nil
+	o.exists = make(map[E]struct{})
+}
+
 func New[S ~[]E, E cmp.Ordered]() *OrderedSet[S, E] {
 	cmpFunc := func(e E, t E) int {
 		return cmp.Compare(e, t)
