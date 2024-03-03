@@ -27,6 +27,10 @@ func (o *OrderedSet[S, E]) Clear() {
 	o.exists = make(map[E]struct{})
 }
 
+func (o *OrderedSet[S, E]) Equal(other *OrderedSet[S, E]) bool {
+	return slices.Equal(o.items, other.items)
+}
+
 func New[S ~[]E, E cmp.Ordered]() *OrderedSet[S, E] {
 	cmpFunc := func(e E, t E) int {
 		return cmp.Compare(e, t)
@@ -67,6 +71,15 @@ func (o *OrderedSet[S, E]) Add(items ...E) {
 			o.items[index] = item
 		}
 	}
+}
+
+func (o *OrderedSet[S, E]) ContainsAll(other *OrderedSet[S, E]) bool {
+	for _, item := range other.items {
+		if _, ok := o.exists[item]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func (o *OrderedSet[S, E]) Contains(item E) bool {

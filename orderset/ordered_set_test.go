@@ -21,6 +21,17 @@ func TestAddRemove(t *testing.T) {
 	claim.True(set.Len() == 0)
 }
 
+func TestContains(t *testing.T) {
+	claim := require.New(t)
+	setOne, _ := testSet()
+	setTwo, _ := testSet()
+	setOne.Add(9922, 4590, 560)
+	claim.True(setOne.ContainsAll(setTwo))
+	claim.False(setTwo.ContainsAll(setOne))
+	setOne.Clear()
+	claim.False(setOne.ContainsAll(setTwo))
+}
+
 func TestClear(t *testing.T) {
 	claim := require.New(t)
 	set, input := testSet()
@@ -28,6 +39,15 @@ func TestClear(t *testing.T) {
 	set.Clear()
 	claim.Len(set.exists, 0)
 	claim.Len(set.items, 0)
+}
+
+func TestEqual(t *testing.T) {
+	claim := require.New(t)
+	setOne, _ := testSet()
+	setTwo, _ := testSet()
+	claim.True(setOne.Equal(setTwo))
+	setOne.Add(67)
+	claim.False(setOne.Equal(setTwo))
 }
 
 func TestIteration(t *testing.T) {
