@@ -1,8 +1,9 @@
-package gosets
+package orderset
 
 import (
 	"cmp"
 	"fmt"
+	"maps"
 
 	"iter"
 	"slices"
@@ -22,10 +23,23 @@ func (o *OrderedSet[S, E]) Len() int {
 	return len(o.items)
 }
 
+func (o *OrderedSet[S, E]) Empty() bool {
+	return len(o.items) == 0
+}
+
 func (o *OrderedSet[S, E]) Clear() {
 	o.items = nil
 	o.exists = make(map[E]struct{})
 }
+
+func (o *OrderedSet[S, E]) Clone() *OrderedSet[S,E] {
+	newSet := NewWithComparator[S,E](o.cmp)
+	newSet.items = make([]E, len(o.items))
+	copy(newSet.items, o.items)
+	newSet.exists = maps.Clone(o.exists)
+	return newSet
+}
+
 
 func (o *OrderedSet[S, E]) Equal(other *OrderedSet[S, E]) bool {
 	return slices.Equal(o.items, other.items)

@@ -1,7 +1,8 @@
-package gosets
+package orderset
 
 import (
 	"cmp"
+	"maps"
 	"slices"
 	"testing"
 
@@ -19,6 +20,18 @@ func TestAddRemove(t *testing.T) {
 	claim.Truef(isSorted, "set is not ordered: %v", set.items)
 	set.Remove(input...)
 	claim.True(set.Len() == 0)
+}
+
+func TestClone(t *testing.T) {
+	claim := require.New(t)
+	setOne, _ := testSet()
+	setTwo := setOne.Clone()
+	claim.True(setOne.Equal(setTwo))
+	claim.True(maps.Equal(setOne.exists, setTwo.exists))
+	setOne.Remove(1)
+	setTwo.Add(1)
+	claim.False(setOne.Equal(setTwo))
+	claim.False(maps.Equal(setOne.exists, setTwo.exists))
 }
 
 func TestContains(t *testing.T) {
