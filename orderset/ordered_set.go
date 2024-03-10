@@ -75,7 +75,7 @@ func (o *OrderedSet[S, E]) All() iter.Seq[E] {
 func (o *OrderedSet[S, E]) Add(items ...E) {
 	for _, item := range items {
 		if _, ok := o.exists[item]; ok {
-			return
+			continue
 		}
 		o.exists[item] = struct{}{}
 		index, _ := slices.BinarySearchFunc(o.items, item, o.cmp)
@@ -104,7 +104,7 @@ func (o *OrderedSet[S, E]) Contains(item E) bool {
 func (o *OrderedSet[S, E]) Remove(items ...E) {
 	for _, item := range items {
 		if _, ok := o.exists[item]; !ok {
-			return
+			continue
 		}
 		delete(o.exists, item)
 		index, _ := slices.BinarySearchFunc(o.items, item, o.cmp)

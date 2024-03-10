@@ -18,8 +18,26 @@ func TestAddRemove(t *testing.T) {
 	}
 	isSorted := slices.IsSortedFunc(set.items, set.cmp)
 	claim.Truef(isSorted, "set is not ordered: %v", set.items)
+	// prove i can remove elements even if one of the elements isn't already in the set
+	removeElements := append([]int{10000}, input...)
+	set.Remove(removeElements...)
+	claim.True(set.Len() == 0)
+}
+
+func TestAddRemoveWithDuplicates(t *testing.T) {
+	claim := require.New(t)
+	set, input := testSet()
+	input = append(input, 1000, 2000, 3000)
+	set.Add(input...)
+	for _, item := range input {
+		claim.Truef(set.Contains(item), "set does not contain %d when it should have this element", item)
+	}
+	isSorted := slices.IsSortedFunc(set.items, set.cmp)
+	claim.Truef(isSorted, "set is not ordered: %v", set.items)
+	slices.Sort(input)
 	set.Remove(input...)
 	claim.True(set.Len() == 0)
+
 }
 
 func TestClone(t *testing.T) {
@@ -32,6 +50,9 @@ func TestClone(t *testing.T) {
 	setTwo.Add(1)
 	claim.False(setOne.Equal(setTwo))
 	claim.False(maps.Equal(setOne.exists, setTwo.exists))
+	setOne.Clear()
+	claim.True(setOne.Empty())
+	claim.False(setTwo.Empty())
 }
 
 func TestContains(t *testing.T) {
