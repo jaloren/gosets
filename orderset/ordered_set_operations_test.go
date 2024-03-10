@@ -17,3 +17,18 @@ func TestUnion(t *testing.T) {
 	claim.True(setUnion.ContainsAll(setTwo))
 	claim.True(setUnion.Equal(setTwo))
 }
+
+func TestIntersect(t *testing.T) {
+	claim := require.New(t)
+	setOne := New[[]int, int]()
+	setOne.Add(1, 2, 3)
+	setTwo := New[[]int, int]()
+	setTwo.Add(1, 2, 3, 4, 5, 6, 7)
+	setIntersect := Intersect(setOne, setTwo)
+	claim.True(setIntersect.Equal(setOne))
+	setIntersect = Intersect(setOne, New[[]int,int]())
+	claim.True(setIntersect.Empty())
+	setOne.Add(7)
+	setIntersect = Intersect(setOne, setTwo)
+	claim.True(setIntersect.Contains(7))
+}
